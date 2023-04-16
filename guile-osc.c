@@ -146,11 +146,31 @@ static SCM osc_send(SCM addr_obj, SCM path_obj, SCM rest)
 {
 	lo_address addr;
 	char *path;
+	int n_args;
+	lo_message message;
+	int i;
 
 	scm_assert_foreign_object_type(osc_address_type, addr_obj);
 	addr = scm_foreign_object_ref(addr_obj, 0);
 	path = scm_to_utf8_stringn(path_obj, NULL);
-	lo_send(addr, path, "");
+
+	n_args = scm_to_int(scm_length(rest));
+
+	message = lo_message_new();
+	for ( i=0; i<n_args; i++ ) {
+		SCM item = scm_list_ref(rest, scm_from_int(i));
+
+		if ( scm_is_true(scm_real_p(item)) ) {
+			lo_message_add_double(message, scm_to_double(item));
+		} else if ( scm_is_true(scm_integer_p(item)) ) {
+			lo_message_add_int32(message, scm_to_int(item));
+		} else {
+			fprintf(stderr, "Unrecognised type\n");
+		}
+	}
+
+	lo_send_message(addr, path, message);
+	lo_message_free(message);
 
 	return SCM_UNSPECIFIED;
 }
