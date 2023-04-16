@@ -1,7 +1,7 @@
 ;;
-;; guile-osc/engine.scm
+;; open-sound-control/server-thread.scm
 ;;
-;; Copyright © 2023 Thomas White <taw@bitwiz.org.uk>
+;; Copyright © 2023 Thomas White <taw@bitwiz.me.uk>
 ;;
 ;; This file is part of Guile-OSC.
 ;;
@@ -18,10 +18,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(define-module (guile-osc engine)
-  #:export (start-osc
-             define-osc-method))
-
-(if (not (provided? 'guile-osc))
-    (load-extension "libguile-osc"
-                    "init_guile_osc"))
+(define-module (open-sound-control server-thread)
+  #:use-module (open-sound-control api)
+  #:re-export (make-osc-server-thread
+                add-osc-method))

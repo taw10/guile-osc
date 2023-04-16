@@ -14,4 +14,4 @@ library('guile-osc', ['guile-osc.c'],
         dependencies: [guile_dep, lo_dep],
         install: true)
 
-install_subdir('guile-osc', install_dir: guile_sitedir)
+install_subdir('open-sound-control', install_dir: guile_sitedir)

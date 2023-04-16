@@ -26,7 +26,7 @@
 #include <lo/lo.h>
 
 
-static SCM osc_server_type;
+static SCM osc_server_thread_type;
 static SCM osc_method_type;
 
 
@@ -36,18 +36,19 @@ static void error_callback(int num, const char *msg, const char *path)
 }
 
 
-static SCM start_osc()
+static SCM make_osc_server_thread(SCM port_obj)
 {
-	lo_server_thread srv = lo_server_thread_new("7770", error_callback);
+	const char *port = scm_to_utf8_stringn(port_obj, NULL);
+	lo_server_thread srv = lo_server_thread_new(port, error_callback);
 	lo_server_thread_start(srv);
-	return scm_make_foreign_object_1(osc_server_type, srv);
+	return scm_make_foreign_object_1(osc_server_thread_type, srv);
 }
 
 
-static void finalize_osc_server(SCM obj)
+static void finalize_osc_server_thread(SCM obj)
 {
 	lo_server_thread srv;
-	scm_assert_foreign_object_type(osc_server_type, obj);
+	scm_assert_foreign_object_type(osc_server_thread_type, obj);
 	srv = scm_foreign_object_ref(obj, 0);
 	lo_server_thread_free(srv);
 }
@@ -99,14 +100,14 @@ static int method_callback(const char *path, const char *types, lo_arg **argv,
 }
 
 
-static SCM define_osc_method(SCM server_obj, SCM path_obj, SCM proc)
+static SCM add_osc_method(SCM server_obj, SCM path_obj, SCM proc)
 {
 	lo_server_thread srv;
 	lo_method method;
 	char *path;
 	struct method_callback_data *data;
 
-	scm_assert_foreign_object_type(osc_server_type, server_obj);
+	scm_assert_foreign_object_type(osc_server_thread_type, server_obj);
 	srv = scm_foreign_object_ref(server_obj, 0);
 
 	data = malloc(sizeof(struct method_callback_data));
@@ -126,18 +127,18 @@ void init_guile_osc()
 {
 	SCM name, slots;
 
-	name = scm_from_utf8_symbol("OSCServer");
+	name = scm_from_utf8_symbol("OSCServerThread");
 	slots = scm_list_1(scm_from_utf8_symbol("data"));
-	osc_server_type = scm_make_foreign_object_type(name,
-	                                               slots,
-	                                               finalize_osc_server);
+	osc_server_thread_type = scm_make_foreign_object_type(name,
+	                                                      slots,
+	                                                      finalize_osc_server_thread);
 
 	name = scm_from_utf8_symbol("OSCMethod");
 	slots = scm_list_1(scm_from_utf8_symbol("data"));
 	osc_method_type = scm_make_foreign_object_type(name, slots, NULL);
 
-	scm_c_define_gsubr("start-osc", 0, 0, 0, start_osc);
-	scm_c_define_gsubr("define-osc-method", 3, 0, 0, define_osc_method);
+	scm_c_define_gsubr("make-osc-server-thread", 1, 0, 0, make_osc_server_thread);
+	scm_c_define_gsubr("add-osc-method", 3, 0, 0, add_osc_method);
 
 	scm_add_feature("guile-osc");
 }
