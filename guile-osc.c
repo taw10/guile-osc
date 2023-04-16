@@ -28,6 +28,7 @@
 
 static SCM osc_server_thread_type;
 static SCM osc_method_type;
+static SCM osc_address_type;
 
 
 static void error_callback(int num, const char *msg, const char *path)
@@ -51,6 +52,24 @@ static void finalize_osc_server_thread(SCM obj)
 	scm_assert_foreign_object_type(osc_server_thread_type, obj);
 	srv = scm_foreign_object_ref(obj, 0);
 	lo_server_thread_free(srv);
+}
+
+
+static SCM make_osc_address(SCM port_obj)
+{
+	lo_address addr;
+	const char *port = scm_to_utf8_stringn(port_obj, NULL);
+	addr = lo_address_new(NULL, port);
+	return scm_make_foreign_object_1(osc_address_type, addr);
+}
+
+
+static void finalize_osc_address(SCM addr_obj)
+{
+	lo_address addr;
+	scm_assert_foreign_object_type(osc_address_type, addr_obj);
+	addr = scm_foreign_object_ref(addr_obj, 0);
+	lo_address_free(addr);
 }
 
 
@@ -123,6 +142,20 @@ static SCM add_osc_method(SCM server_obj, SCM path_obj, SCM proc)
 }
 
 
+static SCM osc_send(SCM addr_obj, SCM path_obj, SCM rest)
+{
+	lo_address addr;
+	char *path;
+
+	scm_assert_foreign_object_type(osc_address_type, addr_obj);
+	addr = scm_foreign_object_ref(addr_obj, 0);
+	path = scm_to_utf8_stringn(path_obj, NULL);
+	lo_send(addr, path, "");
+
+	return SCM_UNSPECIFIED;
+}
+
+
 void init_guile_osc()
 {
 	SCM name, slots;
@@ -137,8 +170,14 @@ void init_guile_osc()
 	slots = scm_list_1(scm_from_utf8_symbol("data"));
 	osc_method_type = scm_make_foreign_object_type(name, slots, NULL);
 
+	name = scm_from_utf8_symbol("OSCAddress");
+	slots = scm_list_1(scm_from_utf8_symbol("data"));
+	osc_address_type = scm_make_foreign_object_type(name, slots, finalize_osc_address);
+
 	scm_c_define_gsubr("make-osc-server-thread", 1, 0, 0, make_osc_server_thread);
 	scm_c_define_gsubr("add-osc-method", 3, 0, 0, add_osc_method);
+	scm_c_define_gsubr("make-osc-address", 1, 0, 0, make_osc_address);
+	scm_c_define_gsubr("osc-send", 2, 0, 1, osc_send);
 
 	scm_add_feature("guile-osc");
 }
