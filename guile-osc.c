@@ -87,7 +87,7 @@ struct method_callback_guile_data
 	const char *types;
 	lo_arg **argv;
 	int argc;
-	lo_message *msg;
+	lo_message msg;
 	void *vp;
 };
 
