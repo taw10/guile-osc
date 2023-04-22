@@ -24,7 +24,7 @@ Then, to receive OSC messages from within a Guile program:
 ```
 (use-modules (open-sound-control server-thread))
 
-(define osc-server (make-osc-server-thread "osc.udp://localhost:7770"))
+(define osc-server (make-osc-server-thread "osc.udp://:7770"))
 
 (add-osc-method osc-server
                 "/my/osc/method"   ;; Method name
