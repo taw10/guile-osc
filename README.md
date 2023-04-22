@@ -23,8 +23,20 @@ Then, to receive OSC messages from within a Guile program:
 
 ```
 (use-modules (open-sound-control server-thread))
+
 (define osc-server (make-osc-server-thread "7770"))
-(add-osc-method osc-server "/my/osc/method" (lambda () (do-something)))
+
+(add-osc-method osc-server
+                "/my/osc/method"   ;; Method name
+                "fi"               ;; Argument types (see liblo manual)
+                (lambda (float-arg int-arg)
+                   (do-something ...)))
+
+(add-osc-method osc-server
+                "/my/other/method"   ;; Method name
+                ""                   ;; No arguments
+                (lambda ()
+                   (do-stuff ...)))
 ```
 
 Or, to send messages (with parameters):

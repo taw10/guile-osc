@@ -88,15 +88,48 @@ struct method_callback_guile_data
 	lo_arg **argv;
 	int argc;
 	lo_message msg;
-	void *vp;
+	SCM proc;
 };
 
 
 static void *method_callback_with_guile(void *vp)
 {
 	struct method_callback_guile_data *data = vp;
-	struct method_callback_data *mdata = data->vp;
-	scm_call_0(mdata->proc);
+	SCM *args;
+
+	if ( data->argc > 0) {
+
+		int i;
+		const char *types;
+
+		args = malloc(sizeof(SCM)*data->argc);
+		if ( args == NULL ) return NULL;
+
+		types = lo_message_get_types(data->msg);
+
+		for ( i=0; i<data->argc; i++ ) {
+			switch ( types[i] ) {
+
+				case 'f':
+				args[i] = scm_from_double(data->argv[i]->f);
+				break;
+
+				case 'i':
+				args[i] = scm_from_int(data->argv[i]->i);
+				break;
+
+				default:
+				fprintf(stderr, "Unrecognised argument type '%c'\n",
+				        types[i]);
+				return NULL;
+			}
+		}
+	} else {
+		args = NULL;
+	}
+
+	scm_call_n(data->proc, args, data->argc);
+	free(args);
 	return NULL;
 }
 
@@ -104,6 +137,8 @@ static void *method_callback_with_guile(void *vp)
 static int method_callback(const char *path, const char *types, lo_arg **argv,
                            int argc, lo_message msg, void *vp)
 {
+	struct method_callback_data *data = vp;
+
 	/* The OSC server thread is not under our control, and is not in
 	 * Guile mode.  Therefore, some "tedious mucking-about in hyperspace"
 	 * is required before we can invoke the Scheme callback */
@@ -113,30 +148,35 @@ static int method_callback(const char *path, const char *types, lo_arg **argv,
 	cb_data.argv = argv;
 	cb_data.argc = argc;
 	cb_data.msg = msg;
-	cb_data.vp = vp;
+	cb_data.proc = data->proc;
 	scm_with_guile(method_callback_with_guile, &cb_data);
 	return 1;
 }
 
 
-static SCM add_osc_method(SCM server_obj, SCM path_obj, SCM proc)
+static SCM add_osc_method(SCM server_obj, SCM path_obj, SCM argtypes_obj,
+                          SCM proc)
 {
 	lo_server_thread srv;
 	lo_method method;
 	char *path;
+	char *argtypes;
 	struct method_callback_data *data;
 
 	scm_assert_foreign_object_type(osc_server_thread_type, server_obj);
 	srv = scm_foreign_object_ref(server_obj, 0);
 
+	argtypes = scm_to_utf8_stringn(argtypes_obj, NULL);
 	data = malloc(sizeof(struct method_callback_data));
+
 	data->proc = proc;
 	scm_gc_protect_object(proc);
 
 	path = scm_to_utf8_stringn(path_obj, NULL);
-	method = lo_server_thread_add_method(srv, path, "",
+	method = lo_server_thread_add_method(srv, path, argtypes,
 	                                     method_callback, data);
 	free(path);
+	free(argtypes);
 
 	return scm_make_foreign_object_1(osc_method_type, method);
 }
@@ -195,7 +235,7 @@ void init_guile_osc()
 	osc_address_type = scm_make_foreign_object_type(name, slots, finalize_osc_address);
 
 	scm_c_define_gsubr("make-osc-server-thread", 1, 0, 0, make_osc_server_thread);
-	scm_c_define_gsubr("add-osc-method", 3, 0, 0, add_osc_method);
+	scm_c_define_gsubr("add-osc-method", 4, 0, 0, add_osc_method);
 	scm_c_define_gsubr("make-osc-address", 1, 0, 0, make_osc_address);
 	scm_c_define_gsubr("osc-send", 2, 0, 1, osc_send);
 
