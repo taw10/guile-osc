@@ -37,10 +37,10 @@ static void error_callback(int num, const char *msg, const char *path)
 }
 
 
-static SCM make_osc_server_thread(SCM port_obj)
+static SCM make_osc_server_thread(SCM url_obj)
 {
-	const char *port = scm_to_utf8_stringn(port_obj, NULL);
-	lo_server_thread srv = lo_server_thread_new(port, error_callback);
+	const char *url = scm_to_utf8_stringn(url_obj, NULL);
+	lo_server_thread srv = lo_server_thread_new_from_url(url, error_callback);
 	if ( srv == NULL ) {
 		return SCM_BOOL_F;
 	} else {
