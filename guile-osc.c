@@ -246,10 +246,10 @@ static SCM osc_send(SCM addr_obj, SCM path_obj, SCM rest)
 	for ( i=0; i<n_args; i++ ) {
 		SCM item = scm_list_ref(rest, scm_from_int(i));
 
-		if ( scm_is_true(scm_real_p(item)) ) {
-			lo_message_add_double(message, scm_to_double(item));
-		} else if ( scm_is_true(scm_integer_p(item)) ) {
+		if ( scm_is_true(scm_integer_p(item)) ) {
 			lo_message_add_int32(message, scm_to_int(item));
+		} else if ( scm_is_true(scm_real_p(item)) ) {
+			lo_message_add_double(message, scm_to_double(item));
 		} else if ( scm_is_true(scm_string_p(item)) ) {
 			lo_message_add_string(message, scm_to_utf8_stringn(item, NULL));
 		} else if ( scm_is_true(scm_symbol_p(item)) ) {
