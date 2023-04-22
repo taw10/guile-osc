@@ -110,18 +110,56 @@ static void *method_callback_with_guile(void *vp)
 		for ( i=0; i<data->argc; i++ ) {
 			switch ( types[i] ) {
 
-				case 'f':
+				case LO_STRING:
+				args[i] = scm_from_utf8_string(&data->argv[i]->s);
+				break;
+
+				case LO_SYMBOL:
+				args[i] = scm_from_utf8_symbol(&data->argv[i]->S);
+				break;
+
+				case LO_INT32:
+				args[i] = scm_from_int32(data->argv[i]->i32);
+				break;
+
+				case LO_INT64:
+				args[i] = scm_from_int64(data->argv[i]->i64);
+				break;
+
+				case LO_FLOAT:
 				args[i] = scm_from_double(data->argv[i]->f);
 				break;
 
-				case 'i':
-				args[i] = scm_from_int(data->argv[i]->i);
+				case LO_DOUBLE:
+				args[i] = scm_from_double(data->argv[i]->d);
+				break;
+
+				case LO_CHAR:
+				args[i] = scm_from_uchar(data->argv[i]->c);
+				break;
+
+				case LO_TRUE:
+				args[i] = SCM_BOOL_T;
+				break;
+
+				case LO_FALSE:
+				args[i] = SCM_BOOL_F;
+				break;
+
+				case LO_NIL:
+				args[i] = SCM_EOL;
+				break;
+
+				case LO_INFINITUM:
+				args[i] = scm_inf();
 				break;
 
 				default:
 				fprintf(stderr, "Unrecognised argument type '%c'\n",
 				        types[i]);
 				return NULL;
+
+				/* Notable omissions so far: LO_TIMETAG and LO_BLOB */
 			}
 		}
 	} else {
