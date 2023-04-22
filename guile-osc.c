@@ -41,8 +41,12 @@ static SCM make_osc_server_thread(SCM port_obj)
 {
 	const char *port = scm_to_utf8_stringn(port_obj, NULL);
 	lo_server_thread srv = lo_server_thread_new(port, error_callback);
-	lo_server_thread_start(srv);
-	return scm_make_foreign_object_1(osc_server_thread_type, srv);
+	if ( srv == NULL ) {
+		return SCM_BOOL_F;
+	} else {
+		lo_server_thread_start(srv);
+		return scm_make_foreign_object_1(osc_server_thread_type, srv);
+	}
 }
 
 
@@ -61,6 +65,11 @@ static SCM make_osc_address(SCM port_obj)
 	const char *port = scm_to_utf8_stringn(port_obj, NULL);
 	addr = lo_address_new(NULL, port);
 	return scm_make_foreign_object_1(osc_address_type, addr);
+	if ( addr == NULL ) {
+		return SCM_BOOL_F;
+	} else {
+		return scm_make_foreign_object_1(osc_address_type, addr);
+	}
 }
 
 
