@@ -242,6 +242,12 @@ static SCM osc_send(SCM addr_obj, SCM path_obj, SCM rest)
 			lo_message_add_double(message, scm_to_double(item));
 		} else if ( scm_is_true(scm_integer_p(item)) ) {
 			lo_message_add_int32(message, scm_to_int(item));
+		} else if ( scm_is_true(scm_string_p(item)) ) {
+			lo_message_add_string(message, scm_to_utf8_stringn(item, NULL));
+		} else if ( scm_is_true(scm_symbol_p(item)) ) {
+			lo_message_add_symbol(message,
+			                      scm_to_utf8_stringn(scm_symbol_to_string(item),
+			                                          NULL));
 		} else {
 			fprintf(stderr, "Unrecognised type\n");
 		}

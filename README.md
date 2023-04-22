@@ -43,8 +43,12 @@ Or, to send messages (with parameters):
   
 ```
 (use-modules (open-sound-control client))
+
 (define osc-send-addr (make-osc-address "7771"))
+
 (osc-send osc-send-addr "/their/osc/method" 1 2 4)
+(osc-send osc-send-addr "/their/other/method" "string-arg")
+(osc-send osc-send-addr "/yet/another/method" 0.3 "hello")
 ```
 
 
