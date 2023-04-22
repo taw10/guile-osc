@@ -59,12 +59,11 @@ static void finalize_osc_server_thread(SCM obj)
 }
 
 
-static SCM make_osc_address(SCM port_obj)
+static SCM make_osc_address(SCM url_obj)
 {
 	lo_address addr;
-	const char *port = scm_to_utf8_stringn(port_obj, NULL);
-	addr = lo_address_new(NULL, port);
-	return scm_make_foreign_object_1(osc_address_type, addr);
+	const char *url = scm_to_utf8_stringn(url_obj, NULL);
+	addr = lo_address_new_from_url(url);
 	if ( addr == NULL ) {
 		return SCM_BOOL_F;
 	} else {
