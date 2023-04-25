@@ -39,8 +39,23 @@ Then, to receive OSC messages from within a Guile program:
                    (do-stuff ...)))
 ```
 
-Or, to send messages (with parameters):
-  
+If the separate server thread doesn't work for you, there's also a blocking
+server option:
+
+```
+(use-modules (open-sound-control server))
+
+(define s (make-osc-server "osc.udp://:7770"))
+
+(add-osc-method s ....)
+
+(osc-recv s)  ;; Blocks for 1 second, or until a message is received
+```
+
+You can even have multiple blocking servers at once: `(osc-recv server1 server2)`.
+
+To send messages (with parameters):
+
 ```
 (use-modules (open-sound-control client))
 

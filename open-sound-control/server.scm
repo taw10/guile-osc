@@ -1,5 +1,5 @@
 ;;
-;; open-sound-control/api.scm
+;; open-sound-control/server.scm
 ;;
 ;; Copyright © 2023 Thomas White <taw@bitwiz.me.uk>
 ;;
@@ -18,17 +18,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
-(define-module (open-sound-control api)
-  #:export (make-osc-server-thread
-             make-osc-server
-             add-osc-method
-
-             osc-recv
-
-             make-osc-address
-             osc-send))
-
-
-(if (not (provided? 'guile-osc))
-    (load-extension "libguile-osc"
-                    "init_guile_osc"))
+(define-module (open-sound-control server)
+  #:use-module (open-sound-control api)
+  #:re-export (make-osc-server
+                add-osc-method
+                osc-recv))

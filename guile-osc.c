@@ -27,6 +27,7 @@
 
 
 static SCM osc_server_thread_type;
+static SCM osc_server_type;
 static SCM osc_method_type;
 static SCM osc_address_type;
 
@@ -56,6 +57,27 @@ static void finalize_osc_server_thread(SCM obj)
 	scm_assert_foreign_object_type(osc_server_thread_type, obj);
 	srv = scm_foreign_object_ref(obj, 0);
 	lo_server_thread_free(srv);
+}
+
+
+static SCM make_osc_server(SCM url_obj)
+{
+	const char *url = scm_to_utf8_stringn(url_obj, NULL);
+	lo_server srv = lo_server_new_from_url(url, error_callback);
+	if ( srv == NULL ) {
+		return SCM_BOOL_F;
+	} else {
+		return scm_make_foreign_object_1(osc_server_type, srv);
+	}
+}
+
+
+static void finalize_osc_server(SCM obj)
+{
+	lo_server srv;
+	scm_assert_foreign_object_type(osc_server_type, obj);
+	srv = scm_foreign_object_ref(obj, 0);
+	lo_server_free(srv);
 }
 
 
@@ -203,14 +225,10 @@ static int method_callback(const char *path, const char *types, lo_arg **argv,
 static SCM add_osc_method(SCM server_obj, SCM path_obj, SCM argtypes_obj,
                           SCM proc)
 {
-	lo_server_thread srv;
 	lo_method method;
 	char *path;
 	char *argtypes;
 	struct method_callback_data *data;
-
-	scm_assert_foreign_object_type(osc_server_thread_type, server_obj);
-	srv = scm_foreign_object_ref(server_obj, 0);
 
 	argtypes = scm_to_utf8_stringn(argtypes_obj, NULL);
 	data = malloc(sizeof(struct method_callback_data));
@@ -219,12 +237,61 @@ static SCM add_osc_method(SCM server_obj, SCM path_obj, SCM argtypes_obj,
 	scm_gc_protect_object(proc);
 
 	path = scm_to_utf8_stringn(path_obj, NULL);
-	method = lo_server_thread_add_method(srv, path, argtypes,
-	                                     method_callback, data);
+
+	if ( SCM_IS_A_P(server_obj, osc_server_thread_type) ) {
+		lo_server_thread srv;
+		srv = scm_foreign_object_ref(server_obj, 0);
+		method = lo_server_thread_add_method(srv, path, argtypes,
+		                                     method_callback, data);
+	} else if ( SCM_IS_A_P(server_obj, osc_server_type) ) {
+		lo_server srv;
+		srv = scm_foreign_object_ref(server_obj, 0);
+		method = lo_server_add_method(srv, path, argtypes,
+		                              method_callback, data);
+	} else {
+		scm_error_scm(scm_from_utf8_symbol("argument-error"),
+		              scm_from_locale_string("add-osc-method"),
+		              scm_from_locale_string("Not an OSC server object"),
+		              SCM_EOL,
+		              SCM_BOOL_F);
+		free(path);
+		free(argtypes);
+		return SCM_UNSPECIFIED;
+	}
+
 	free(path);
 	free(argtypes);
 
 	return scm_make_foreign_object_1(osc_method_type, method);
+}
+
+
+static SCM osc_recv(SCM rest)
+{
+	int i;
+	int n_srv;
+	lo_server *servers;
+	int *rcv;
+
+	SCM le = scm_length(rest);
+	n_srv = scm_to_int(le);
+
+	servers = malloc(n_srv*sizeof(lo_server));
+	rcv = malloc(n_srv*sizeof(int));
+	if ( (servers == NULL) || (rcv == NULL) ) return SCM_UNSPECIFIED;
+
+	for ( i=0; i<n_srv; i++ ) {
+		SCM item = scm_list_ref(rest, scm_from_int(i));
+		scm_assert_foreign_object_type(osc_server_type, item);
+		servers[i] = scm_foreign_object_ref(item, 0);
+		rcv[i] = 0;
+	}
+	lo_servers_recv_noblock(servers, rcv, n_srv, 1000);
+
+	free(servers);
+	free(rcv);
+
+	return SCM_UNSPECIFIED;
 }
 
 
@@ -278,6 +345,12 @@ void init_guile_osc()
 	                                                      slots,
 	                                                      finalize_osc_server_thread);
 
+	name = scm_from_utf8_symbol("OSCServer");
+	slots = scm_list_1(scm_from_utf8_symbol("data"));
+	osc_server_type = scm_make_foreign_object_type(name,
+	                                               slots,
+	                                               finalize_osc_server);
+
 	name = scm_from_utf8_symbol("OSCMethod");
 	slots = scm_list_1(scm_from_utf8_symbol("data"));
 	osc_method_type = scm_make_foreign_object_type(name, slots, NULL);
@@ -287,6 +360,8 @@ void init_guile_osc()
 	osc_address_type = scm_make_foreign_object_type(name, slots, finalize_osc_address);
 
 	scm_c_define_gsubr("make-osc-server-thread", 1, 0, 0, make_osc_server_thread);
+	scm_c_define_gsubr("make-osc-server", 1, 0, 0, make_osc_server);
+	scm_c_define_gsubr("osc-recv", 0, 0, 1, osc_recv);
 	scm_c_define_gsubr("add-osc-method", 4, 0, 0, add_osc_method);
 	scm_c_define_gsubr("make-osc-address", 1, 0, 0, make_osc_address);
 	scm_c_define_gsubr("osc-send", 2, 0, 1, osc_send);
