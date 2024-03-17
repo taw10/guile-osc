@@ -26,7 +26,8 @@
              osc-recv
 
              make-osc-address
-             osc-send))
+             osc-send
+             osc-send-from))
 
 
 (if (not (provided? 'guile-osc))

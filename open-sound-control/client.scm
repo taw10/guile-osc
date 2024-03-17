@@ -21,4 +21,5 @@
 (define-module (open-sound-control client)
   #:use-module (open-sound-control api)
   #:re-export (osc-send
+                osc-send-from
                 make-osc-address))

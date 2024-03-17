@@ -295,17 +295,11 @@ static SCM osc_recv(SCM rest)
 }
 
 
-static SCM osc_send(SCM addr_obj, SCM path_obj, SCM rest)
+static lo_message make_lo_message(SCM rest)
 {
-	lo_address addr;
-	char *path;
 	int n_args;
 	lo_message message;
 	int i;
-
-	scm_assert_foreign_object_type(osc_address_type, addr_obj);
-	addr = scm_foreign_object_ref(addr_obj, 0);
-	path = scm_to_utf8_stringn(path_obj, NULL);
 
 	n_args = scm_to_int(scm_length(rest));
 
@@ -328,9 +322,44 @@ static SCM osc_send(SCM addr_obj, SCM path_obj, SCM rest)
 		}
 	}
 
+	return message;
+}
+
+
+static SCM osc_send_from(SCM addr_obj, SCM from_obj, SCM path_obj, SCM rest)
+{
+	lo_address addr;
+	char *path;
+	lo_server server;
+	lo_message message;
+
+	scm_assert_foreign_object_type(osc_address_type, addr_obj);
+	addr = scm_foreign_object_ref(addr_obj, 0);
+	path = scm_to_utf8_stringn(path_obj, NULL);
+
+	scm_assert_foreign_object_type(osc_server_type, from_obj);
+	server = scm_foreign_object_ref(from_obj, 0);
+
+	message = make_lo_message(rest);
+	lo_send_message_from(addr, server, path, message);
+	lo_message_free(message);
+	return SCM_UNSPECIFIED;
+}
+
+
+static SCM osc_send(SCM addr_obj, SCM path_obj, SCM rest)
+{
+	lo_address addr;
+	char *path;
+	lo_message message;
+
+	scm_assert_foreign_object_type(osc_address_type, addr_obj);
+	addr = scm_foreign_object_ref(addr_obj, 0);
+	path = scm_to_utf8_stringn(path_obj, NULL);
+
+	message = make_lo_message(rest);
 	lo_send_message(addr, path, message);
 	lo_message_free(message);
-
 	return SCM_UNSPECIFIED;
 }
 
@@ -365,6 +394,7 @@ void init_guile_osc()
 	scm_c_define_gsubr("add-osc-method", 4, 0, 0, add_osc_method);
 	scm_c_define_gsubr("make-osc-address", 1, 0, 0, make_osc_address);
 	scm_c_define_gsubr("osc-send", 2, 0, 1, osc_send);
+	scm_c_define_gsubr("osc-send-from", 3, 0, 1, osc_send_from);
 
 	scm_add_feature("guile-osc");
 }
