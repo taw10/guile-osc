@@ -22,4 +22,5 @@
   #:use-module (open-sound-control api)
   #:re-export (make-osc-server
                 add-osc-method
+                add-osc-wildcard
                 osc-recv))

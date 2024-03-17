@@ -222,6 +222,44 @@ static int method_callback(const char *path, const char *types, lo_arg **argv,
 }
 
 
+static SCM add_osc_wildcard(SCM server_obj, SCM argtypes_obj, SCM proc)
+{
+	lo_method method;
+	char *argtypes;
+	struct method_callback_data *data;
+
+	argtypes = scm_to_utf8_stringn(argtypes_obj, NULL);
+	data = malloc(sizeof(struct method_callback_data));
+
+	data->proc = proc;
+	scm_gc_protect_object(proc);
+
+	if ( SCM_IS_A_P(server_obj, osc_server_thread_type) ) {
+		lo_server_thread srv;
+		srv = scm_foreign_object_ref(server_obj, 0);
+		method = lo_server_thread_add_method(srv, NULL, argtypes,
+		                                     method_callback, data);
+	} else if ( SCM_IS_A_P(server_obj, osc_server_type) ) {
+		lo_server srv;
+		srv = scm_foreign_object_ref(server_obj, 0);
+		method = lo_server_add_method(srv, NULL, argtypes,
+		                              method_callback, data);
+	} else {
+		scm_error_scm(scm_from_utf8_symbol("argument-error"),
+		              scm_from_locale_string("add-osc-method"),
+		              scm_from_locale_string("Not an OSC server object"),
+		              SCM_EOL,
+		              SCM_BOOL_F);
+		free(argtypes);
+		return SCM_UNSPECIFIED;
+	}
+
+	free(argtypes);
+
+	return scm_make_foreign_object_1(osc_method_type, method);
+}
+
+
 static SCM add_osc_method(SCM server_obj, SCM path_obj, SCM argtypes_obj,
                           SCM proc)
 {
@@ -392,6 +430,7 @@ void init_guile_osc()
 	scm_c_define_gsubr("make-osc-server", 1, 0, 0, make_osc_server);
 	scm_c_define_gsubr("osc-recv", 0, 0, 1, osc_recv);
 	scm_c_define_gsubr("add-osc-method", 4, 0, 0, add_osc_method);
+	scm_c_define_gsubr("add-osc-wildcard", 3, 0, 0, add_osc_wildcard);
 	scm_c_define_gsubr("make-osc-address", 1, 0, 0, make_osc_address);
 	scm_c_define_gsubr("osc-send", 2, 0, 1, osc_send);
 	scm_c_define_gsubr("osc-send-from", 3, 0, 1, osc_send_from);

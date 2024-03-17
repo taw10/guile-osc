@@ -21,4 +21,5 @@
 (define-module (open-sound-control server-thread)
   #:use-module (open-sound-control api)
   #:re-export (make-osc-server-thread
-                add-osc-method))
+                add-osc-method
+                add-osc-wildcard))

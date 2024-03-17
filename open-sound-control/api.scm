@@ -22,6 +22,7 @@
   #:export (make-osc-server-thread
              make-osc-server
              add-osc-method
+             add-osc-wildcard
 
              osc-recv
 
