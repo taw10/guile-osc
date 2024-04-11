@@ -79,6 +79,15 @@ bidirectionally via a TCP connection, use `osc-send-from`.  For example:
 (osc-send-from dst srv "/method/name" 1 2 3)
 ```
 
+
+Examples
+--------
+
+See [examples/eos-x1k2.scm](examples/eos-x1k2.scm) for an example.  This is the
+script I use, in conjunction with [x1k2-midi-osc-alsa](https://github.com/taw10/x1k2-midi-osc-alsa),
+to connect a USB MIDI control surface to [Eos](https://www.etcconnect.com/Products/Consoles/Eos-Consoles/).
+
+
 Licence
 -------
 
