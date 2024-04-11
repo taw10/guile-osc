@@ -39,8 +39,12 @@ Then, to receive OSC messages from within a Guile program:
                    (do-stuff ...)))
 ```
 
-If the separate server thread doesn't work for you, there's also a blocking
-server option:
+To define a wildcard method, which matches everything, use `add-osc-wildcard`
+instead of `add-osc-method`, leave the method name out but keep everything
+else.
+
+If the separate server thread doesn't work in your application, there's also a
+blocking server option:
 
 ```
 (use-modules (open-sound-control server))
@@ -66,6 +70,14 @@ To send messages (with parameters):
 (osc-send osc-send-addr "/yet/another/method" 0.3 "hello")
 ```
 
+To send messages "from" a particular server, e.g. to communicate
+bidirectionally via a TCP connection, use `osc-send-from`.  For example:
+
+```
+(define srv (make-osc-server "osc.tcp://:8000"))
+(define dst (make-osc-address "osc.tcp://192.168.178.35:8000"))
+(osc-send-from dst srv "/method/name" 1 2 3)
+```
 
 Licence
 -------
