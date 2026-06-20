@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y liblo-dev guile-dev
+          sudo apt-get install -y liblo-dev guile-3.0-dev
       - name: Install Meson
         run: pip install meson ninja
       - name: Meson setup
