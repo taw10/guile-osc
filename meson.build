@@ -8,7 +8,24 @@ guile_dep = dependency('guile-3.0', required: true)
 lo_dep = dependency('liblo', required: true)
 
 # The installation location for Scheme files
-guile_sitedir = guile_dep.get_pkgconfig_variable('sitedir')
+guile_sitedir = guile_dep.get_variable('sitedir')
+guile_cachedir = guile_dep.get_variable('siteccachedir')
+
+guild = find_program(guile_dep.get_variable('guild'))
+
+scm_files = ['api.scm',
+             'client.scm',
+             'server-thread.scm',
+             'server.scm']
+
+foreach file : scm_files
+    custom_target(file,
+                  input: join_paths('open-sound-control', file),
+                  output: '@BASENAME@.go',
+                  command: [guild, 'compile', '@INPUT@','-o', '@OUTPUT@'],
+                  install: true,
+                  install_dir: join_paths(guile_cachedir, 'open-sound-control'))
+  endforeach
 
 library('guile-osc', ['guile-osc.c'],
         dependencies: [guile_dep, lo_dep],
