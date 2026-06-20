@@ -24,6 +24,7 @@ foreach file : scm_files
                   output: '@BASENAME@.go',
                   command: [guild, 'compile', '@INPUT@', '-o', '@OUTPUT@',
                             '-L', '@CURRENT_SOURCE_DIR@'],
+                  env: {'GUILE_EXTENSIONS_PATH': meson.current_build_dir()},
                   install: true,
                   install_dir: join_paths(guile_cachedir, 'open-sound-control'))
   endforeach
