@@ -1,0 +1,39 @@
+name: Basic build tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y liblo-dev guile-dev
+      - name: Install Meson
+        run: pip install meson ninja
+      - name: Meson setup
+        run: meson setup build
+      - name: Meson compile
+        run: meson compile -C build
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew install guile liblo meson ninja
+      - name: Meson setup
+        run: meson setup build
+      - name: Meson compile
+        run: meson compile -C build
