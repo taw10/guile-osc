@@ -18,19 +18,20 @@ scm_files = ['api.scm',
              'server-thread.scm',
              'server.scm']
 
+lib = library('guile-osc', ['guile-osc.c'],
+              dependencies: [guile_dep, lo_dep],
+              install: true)
+
 foreach file : scm_files
     custom_target(file,
                   input: join_paths('open-sound-control', file),
                   output: '@BASENAME@.go',
                   command: [guild, 'compile', '@INPUT@', '-o', '@OUTPUT@',
                             '-L', '@CURRENT_SOURCE_DIR@'],
+                  depends: [lib],
                   env: {'GUILE_EXTENSIONS_PATH': meson.current_build_dir()},
                   install: true,
                   install_dir: join_paths(guile_cachedir, 'open-sound-control'))
   endforeach
-
-library('guile-osc', ['guile-osc.c'],
-        dependencies: [guile_dep, lo_dep],
-        install: true)
 
 install_subdir('open-sound-control', install_dir: guile_sitedir)
