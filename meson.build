@@ -22,7 +22,8 @@ foreach file : scm_files
     custom_target(file,
                   input: join_paths('open-sound-control', file),
                   output: '@BASENAME@.go',
-                  command: [guild, 'compile', '@INPUT@','-o', '@OUTPUT@'],
+                  command: [guild, 'compile', '@INPUT@', '-o', '@OUTPUT@',
+                            '-L', '@CURRENT_SOURCE_DIR@'],
                   install: true,
                   install_dir: join_paths(guile_cachedir, 'open-sound-control'))
   endforeach
