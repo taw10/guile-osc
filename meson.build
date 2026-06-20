@@ -1,6 +1,6 @@
 project('guile-osc', ['c'],
         version: '0.1.0',
-        license: 'GPL3+',
+        license: 'LGPL-2.1-or-later',
         default_options: ['buildtype=debugoptimized'])
 
 # Dependencies
