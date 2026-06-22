@@ -14,6 +14,8 @@ guile_extdir = guile_dep.get_variable('extensiondir')
 
 guild = find_program(guile_dep.get_variable('guild'))
 
+fs = import('fs')
+
 scm_files = ['api.scm',
              'client.scm',
              'server-thread.scm',
@@ -31,7 +33,7 @@ foreach file : scm_files
                   command: [guild, 'compile', '@INPUT@', '-o', '@OUTPUT@',
                             '-L', '@CURRENT_SOURCE_DIR@'],
                   depends: [lib],
-                  env: {'GUILE_EXTENSIONS_PATH': meson.current_build_dir()},
+                  env: {'GUILE_EXTENSIONS_PATH': fs.parent(lib.full_path())},
                   install: true,
                   install_dir: join_paths(guile_cachedir, 'open-sound-control'))
   endforeach
