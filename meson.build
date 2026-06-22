@@ -10,6 +10,7 @@ lo_dep = dependency('liblo', required: true)
 # The installation location for Scheme files
 guile_sitedir = guile_dep.get_variable('sitedir')
 guile_cachedir = guile_dep.get_variable('siteccachedir')
+guile_extdir = guile_dep.get_variable('extensiondir')
 
 guild = find_program(guile_dep.get_variable('guild'))
 
@@ -20,7 +21,8 @@ scm_files = ['api.scm',
 
 lib = library('guile-osc', ['guile-osc.c'],
               dependencies: [guile_dep, lo_dep],
-              install: true)
+              install: true,
+              install_dir: guile_extdir)
 
 foreach file : scm_files
     custom_target(file,
