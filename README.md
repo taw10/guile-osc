@@ -83,12 +83,16 @@ bidirectionally via a TCP connection, use `osc-send-from`.  For example:
 Examples
 --------
 
-See [examples/eos-x1k2.scm](examples/eos-x1k2.scm) for an example.  This is the
-script I use, in conjunction with [x1k2-midi-osc-alsa](https://github.com/taw10/x1k2-midi-osc-alsa),
-to connect a USB MIDI control surface to [Eos](https://www.etcconnect.com/Products/Consoles/Eos-Consoles/).
+* [examples/eos-x1k2.scm](examples/eos-x1k2.scm) is the script I use, in
+  conjunction with [x1k2-midi-osc-alsa](https://github.com/taw10/x1k2-midi-osc-alsa),
+  to connect a USB MIDI control surface to
+  [Eos](https://www.etcconnect.com/Products/Consoles/Eos-Consoles/).
+
+* [examples/ma3-x1k2.scm](examples/eos-x1k2.scm) is something similar, but for
+  [GrandMA3](https://www.malighting.com/grandma3/).
 
 
 Licence
 -------
 
-LGPL 2.1, the same as liblo itself.
+LGPL 2.1 (or later), the same as liblo itself.
