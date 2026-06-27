@@ -15,8 +15,8 @@ You will need the development files for Guile and liblo installed, as well as
 $ git clone https://github.com/taw10/guile-osc.git guile-osc
 $ cd guile-osc
 $ meson setup build
-$ ninja -C build
-$ sudo ninja -C build install
+$ meson compile -C build
+$ meson install -C build
 ```
 
 Then, to receive OSC messages from within a Guile program:
@@ -88,7 +88,7 @@ Examples
   to connect a USB MIDI control surface to
   [Eos](https://www.etcconnect.com/Products/Consoles/Eos-Consoles/).
 
-* [examples/ma3-x1k2.scm](examples/eos-x1k2.scm) is something similar, but for
+* [examples/ma3-x1k2.scm](examples/ma3-x1k2.scm) is something similar, but for
   [GrandMA3](https://www.malighting.com/grandma3/).
 
 
