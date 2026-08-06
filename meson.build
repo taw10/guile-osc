@@ -1,5 +1,5 @@
 project('guile-osc', ['c'],
-        version: '0.1.0',
+        version: '1.0.0',
         license: 'LGPL-2.1-or-later',
         default_options: ['buildtype=debugoptimized'])
 
